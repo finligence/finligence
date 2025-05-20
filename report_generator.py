@@ -1,43 +1,18 @@
-from fpdf import FPDF
-from datetime import datetime
+def generate_summary_report(forecast_df):
+    total_inflow = forecast_df["Inflow"].sum()
+    total_outflow = forecast_df["Outflow"].sum()
+    net_cash_flow = forecast_df["Net Cash Flow"].sum()
+    avg_dscr = forecast_df["DSCR"].mean()
 
-class FinligencePDF(FPDF):
-    def header(self):
-        self.set_font("Arial", "B", 12)
-        self.cell(0, 10, "Finligence - Certified Cash Flow Report", ln=True, align="C")
-        self.set_font("Arial", "", 10)
-        self.cell(0, 10, "Financial Forecast and Actual Cash Flow Summary", ln=True, align="C")
-        self.ln(5)
+    report = {
+        "Total Inflow": round(total_inflow, 2),
+        "Total Outflow": round(total_outflow, 2),
+        "Net Cash Flow": round(net_cash_flow, 2),
+        "Average DSCR": round(avg_dscr, 2),
+        "Next Step": (
+            "You may now generate your formal forecast summary report for submission to lenders. "
+            "Ensure your assumptions reflect real business conditions."
+        )
+    }
 
-    def footer(self):
-        self.set_y(-15)
-        self.set_font("Arial", "I", 8)
-        self.cell(0, 10, f"Page {self.page_no()} | Finligence", 0, 0, "C")
-
-def generate_pdf_report(forecast_df, comparison_df, filename="Finligence_CashFlow_Report.pdf"):
-    pdf = FinligencePDF()
-    pdf.add_page()
-
-    pdf.set_font("Arial", "B", 11)
-    pdf.cell(0, 10, "Forecast Summary", ln=True)
-    pdf.set_font("Arial", "", 10)
-    for _, row in forecast_df.iterrows():
-        pdf.cell(0, 8, f"{row['Month']}: Inflow ${row['Inflow']:,.0f}, Outflow ${row['Outflow']:,.0f}, Net ${row['Net Cash Flow']:,.0f}, DSCR {row['DSCR']}", ln=True)
-    pdf.ln(5)
-
-    pdf.set_font("Arial", "B", 11)
-    pdf.cell(0, 10, "Forecast Accuracy (vs Actual)", ln=True)
-    pdf.set_font("Arial", "", 10)
-    for _, row in comparison_df.iterrows():
-        pdf.cell(0, 8, f"{row['Month']}: Accuracy {row['Accuracy %']:.1f}% - {row['Remark']}", ln=True)
-
-    pdf.ln(10)
-    pdf.set_font("Arial", "B", 11)
-    pdf.cell(0, 10, "Certified by:", ln=True)
-    pdf.set_font("Arial", "", 10)
-    pdf.cell(0, 8, "FCPA (Australia), FCMA (UK), CGMA (Global)", ln=True)
-    pdf.cell(0, 8, f"Date: {datetime.today().strftime('%Y-%m-%d')}", ln=True)
-
-    save_path = f"/mnt/data/{filename}"
-    pdf.output(save_path)
-    return save_path
+    return report
