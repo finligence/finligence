@@ -1,21 +1,18 @@
 import streamlit as st
 import pandas as pd
 
-def upload_actual_cashflow():
-    st.header("Upload Actual Cash Flow")
+def upload_actuals_and_compare(forecast_df):
+    st.subheader("Upload Actual Financial Data")
+    uploaded_file = st.file_uploader("Choose your actual financials CSV file", type="csv")
 
-    uploaded_file = st.file_uploader("Upload CSV file (with Date, Description, Debit, Credit)", type=["csv"])
     if uploaded_file:
-        try:
-            df = pd.read_csv(uploaded_file)
-            df['Date'] = pd.to_datetime(df['Date'])
-            df['Amount'] = df['Credit'].fillna(0) - df['Debit'].fillna(0)
-            df['Month'] = df['Date'].dt.to_period("M").astype(str)
-            df['Type'] = df['Amount'].apply(lambda x: "Inflow" if x > 0 else "Outflow")
-            monthly_summary = df.groupby(['Month', 'Type'])['Amount'].sum().unstack(fill_value=0).reset_index()
-            monthly_summary['Net Cash Flow'] = monthly_summary.get('Inflow', 0) + monthly_summary.get('Outflow', 0)
-            st.dataframe(monthly_summary)
-            return monthly_summary
-        except Exception as e:
-            st.error(f"Upload failed: {e}")
-    return None
+        actuals_df = pd.read_csv(uploaded_file)
+
+        # Basic validation
+        if "Month" in actuals_df.columns and "Net Cash Flow" in actuals_df.columns:
+            comparison = forecast_df.merge(actuals_df, on="Month", suffixes=("_Forecast", "_Actual"))
+            comparison["Variance"] = comparison["Net Cash Flow_Actual"] - comparison["Net Cash Flow_Forecast"]
+            st.write("Comparison Table")
+            st.dataframe(comparison)
+        else:
+            st.error("CSV must contain 'Month' and 'Net Cash Flow' columns.")
