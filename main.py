@@ -1,2 +1,8 @@
-# Streamlit app: Smart Assumption Wizard + Forecast Summary
-# (Content omitted here to avoid repetition — same as previous assistant message)
+import streamlit as st
+
+st.set_page_config(page_title="Finligence", layout="wide")
+
+st.title("Finligence")
+st.subheader("Forecast. Certify. Lend.")
+
+st.write("👋 Welcome to Finligence — your AI-powered financial assistant.")
